@@ -2,13 +2,16 @@
 #include <asm/io.h>
 #include <asm/arch/cpu.h>
 #include <asm/arch/clock.h>
+#ifndef CONFIG_MACH_SUN8I_T113
 #include <asm/arch/prcm.h>
+#endif
 
 #ifdef CONFIG_SPL_BUILD
 void clock_init_safe(void)
 {
 	struct sunxi_ccm_reg *const ccm =
 		(struct sunxi_ccm_reg *)SUNXI_CCM_BASE;
+#ifndef CONFIG_MACH_SUN8I_T113
 	struct sunxi_prcm_reg *const prcm =
 		(struct sunxi_prcm_reg *)SUNXI_PRCM_BASE;
 
@@ -27,6 +30,7 @@ void clock_init_safe(void)
 		/* set PLL VDD LDO output to 1.14 V */
 		setbits_le32(&prcm->pll_ldo_cfg, 0x60000);
 	}
+#endif
 
 	clock_set_pll1(408000000);
 
@@ -38,7 +42,9 @@ void clock_init_safe(void)
 			CCM_CPU_AXI_DEFAULT_FACTORS);
 
 	writel(CCM_PSI_AHB1_AHB2_DEFAULT, &ccm->psi_ahb1_ahb2_cfg);
+#ifndef CONFIG_MACH_SUN8I_T113
 	writel(CCM_AHB3_DEFAULT, &ccm->ahb3_cfg);
+#endif
 	writel(CCM_APB1_DEFAULT, &ccm->apb1_cfg);
 
 	/*
@@ -87,8 +93,10 @@ void clock_set_pll1(unsigned int clk)
 
 	/* clk = 24*n/p, p is ignored if clock is >288MHz */
 	writel(CCM_PLL1_CTRL_EN | CCM_PLL1_LOCK_EN | CCM_PLL1_CLOCK_TIME_2 |
-#ifdef CONFIG_MACH_SUN50I_H616
+#if defined(CONFIG_MACH_SUN50I_H616)
 	       CCM_PLL1_OUT_EN |
+#elif defined(CONFIG_MACH_SUN8I_T113)
+	       CCM_PLL1_OUT_EN | CCM_PLL1_LDO_EN |
 #endif
 	       CCM_PLL1_CTRL_N(clk / 24000000), &ccm->pll1_cfg);
 	while (!(readl(&ccm->pll1_cfg) & CCM_PLL1_LOCK)) {}
@@ -105,12 +113,19 @@ unsigned int clock_get_pll6(void)
 {
 	struct sunxi_ccm_reg *const ccm =
 		(struct sunxi_ccm_reg *)SUNXI_CCM_BASE;
-	int m = IS_ENABLED(CONFIG_MACH_SUN50I_H6) ? 4 : 2;
 
 	uint32_t rval = readl(&ccm->pll6_cfg);
 	int n = ((rval & CCM_PLL6_CTRL_N_MASK) >> CCM_PLL6_CTRL_N_SHIFT) + 1;
-	int div1 = ((rval & CCM_PLL6_CTRL_DIV1_MASK) >>
-			CCM_PLL6_CTRL_DIV1_SHIFT) + 1;
+#ifndef CONFIG_MACH_SUN8I_T113
+		int div1 = ((rval & CCM_PLL6_CTRL_DIV1_MASK) >>
+				   CCM_PLL6_CTRL_DIV1_SHIFT) + 1;
+	int m = IS_ENABLED(CONFIG_MACH_SUN50I_H6) ? 4 : 2;
+#else
+	int div1 = ((rval & CCM_PLL6_CTRL_P0_MASK) >>
+			   CCM_PLL6_CTRL_P0_SHIFT) + 1;
+	int m = 2;
+#endif
+
 	int div2 = ((rval & CCM_PLL6_CTRL_DIV2_MASK) >>
 			CCM_PLL6_CTRL_DIV2_SHIFT) + 1;
 	/* The register defines PLL6-2X or PLL6-4X, not plain PLL6 */
@@ -121,17 +136,19 @@ int clock_twi_onoff(int port, int state)
 {
 	struct sunxi_ccm_reg *const ccm =
 		(struct sunxi_ccm_reg *)SUNXI_CCM_BASE;
-	struct sunxi_prcm_reg *const prcm =
-		(struct sunxi_prcm_reg *)SUNXI_PRCM_BASE;
 	u32 value, *ptr;
 	int shift;
 
 	value = BIT(GATE_SHIFT) | BIT (RESET_SHIFT);
-
+#ifndef CONFIG_MACH_SUN8I_T113
 	if (port == 5) {
+		struct sunxi_prcm_reg *const prcm =
+			(struct sunxi_prcm_reg *)SUNXI_PRCM_BASE;
 		shift = 0;
 		ptr = &prcm->twi_gate_reset;
-	} else {
+	} else
+#endif
+	{
 		shift = port;
 		ptr = &ccm->twi_gate_reset;
 	}

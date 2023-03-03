@@ -157,6 +157,8 @@ enum env_location env_get_location(enum env_operation op, int prio)
 	case BOOT_DEVICE_SPI:
 		if (prio == 0 && IS_ENABLED(CONFIG_ENV_IS_IN_SPI_FLASH))
 			return ENVL_SPI_FLASH;
+		if (IS_ENABLED(CONFIG_ENV_IS_IN_MTD))
+			return ENVL_MTD;
 		if (IS_ENABLED(CONFIG_ENV_IS_IN_FAT))
 			return ENVL_FAT;
 		break;
@@ -224,9 +226,11 @@ int board_init(void)
 	}
 #endif /* !CONFIG_ARM64 && !CONFIG_MACH_SUNIV */
 
+#ifndef CONFIG_MACH_SUN8I_T113
 	ret = axp_gpio_init();
 	if (ret)
 		return ret;
+#endif
 
 	/* strcmp() would look better, but doesn't get optimised away. */
 	if (CONFIG_SATAPWR[0]) {

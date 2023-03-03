@@ -544,6 +544,30 @@ static const struct sunxi_pinctrl_desc __maybe_unused sun8i_v3s_pinctrl_desc = {
 	.num_banks	= 7,
 };
 
+static const struct sunxi_pinctrl_function sun8i_t113_pinctrl_functions[] = {
+	{ "emac",	4 },	/* PG0-PG15 */
+	{ "gpio_in",	0 },
+	{ "gpio_out",	1 },
+	{ "i2c0",	4 },	/* PB2-PB3 */
+	{ "i2c1",	4 },	/* PB4-PB6 */
+	{ "mmc0",	2 },	/* PF0-PF5 */
+	{ "mmc1",	2 },	/* PG0-PG5 */
+	{ "mmc2",	3 },	/* PC2-PC7 */
+	{ "spi0",	2 },	/* PC2-PC7 */
+#if IS_ENABLED(CONFIG_UART0_PORT_F)
+	{ "uart0",	3 },	/* PF2/PF4 */
+#else
+	{ "uart0",	6 },	/* PE2-PE3 */
+#endif
+};
+
+static const struct sunxi_pinctrl_desc __maybe_unused sun8i_t113_pinctrl_desc = {
+	.functions	= sun8i_t113_pinctrl_functions,
+	.num_functions	= ARRAY_SIZE(sun8i_t113_pinctrl_functions),
+	.first_bank	= SUNXI_GPIO_A,
+	.num_banks	= 7,
+};
+
 static const struct sunxi_pinctrl_function sun9i_a80_pinctrl_functions[] = {
 	{ "gmac",	2 },	/* PA0-PA17 */
 	{ "gpio_in",	0 },
@@ -827,6 +851,12 @@ static const struct udevice_id sunxi_pinctrl_ids[] = {
 	{
 		.compatible = "allwinner,sun8i-v3s-pinctrl",
 		.data = (ulong)&sun8i_v3s_pinctrl_desc,
+	},
+#endif
+#ifdef CONFIG_PINCTRL_SUN8I_T113
+	{
+		.compatible = "allwinner,sun8i-t113-pinctrl",
+		.data = (ulong)&sun8i_t113_pinctrl_desc,
 	},
 #endif
 #ifdef CONFIG_PINCTRL_SUN9I_A80

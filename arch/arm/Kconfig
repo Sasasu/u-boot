@@ -1154,7 +1154,6 @@ config ARCH_SUNXI
 	select DM_GPIO
 	select DM_I2C if I2C
 	select DM_SPI if SPI
-	select DM_SPI_FLASH if SPI
 	select DM_KEYBOARD
 	select DM_MMC if MMC
 	select DM_SCSI if SCSI
@@ -1191,7 +1190,7 @@ config ARCH_SUNXI
 	imply SPL_LIBCOMMON_SUPPORT
 	imply SPL_LIBGENERIC_SUPPORT
 	imply SPL_MMC if MMC
-	imply SPL_POWER
+	imply SPL_POWER if POWER
 	imply SPL_SERIAL
 	imply SYSRESET
 	imply SYSRESET_WATCHDOG

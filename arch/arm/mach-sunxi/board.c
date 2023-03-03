@@ -143,6 +143,10 @@ static int gpio_init(void)
 	sunxi_gpio_set_cfgpin(SUNXI_GPB(8), SUN8I_V3S_GPB_UART0);
 	sunxi_gpio_set_cfgpin(SUNXI_GPB(9), SUN8I_V3S_GPB_UART0);
 	sunxi_gpio_set_pull(SUNXI_GPB(9), SUNXI_GPIO_PULL_UP);
+#elif CONFIG_CONS_INDEX == 1 && defined(CONFIG_MACH_SUN8I_T113)
+	sunxi_gpio_set_cfgpin(SUNXI_GPE(2), SUN8I_T113_GPE_UART0);
+	sunxi_gpio_set_cfgpin(SUNXI_GPE(3), SUN8I_T113_GPE_UART0);
+	sunxi_gpio_set_pull(SUNXI_GPE(3), SUNXI_GPIO_PULL_UP);
 #elif CONFIG_CONS_INDEX == 1 && defined(CONFIG_MACH_SUN9I)
 	sunxi_gpio_set_cfgpin(SUNXI_GPH(12), SUN9I_GPH_UART0);
 	sunxi_gpio_set_cfgpin(SUNXI_GPH(13), SUN9I_GPH_UART0);
@@ -172,12 +176,14 @@ static int gpio_init(void)
 #error Unsupported console port number. Please fix pin mux settings in board.c
 #endif
 
-#ifdef CONFIG_SUN50I_GEN_H6
+#if defined(CONFIG_SUN50I_GEN_H6) || defined(CONFIG_MACH_SUN8I_T113)
 	/* Update PIO power bias configuration by copy hardware detected value */
 	val = readl(SUNXI_PIO_BASE + SUN50I_H6_GPIO_POW_MOD_VAL);
 	writel(val, SUNXI_PIO_BASE + SUN50I_H6_GPIO_POW_MOD_SEL);
+#ifdef SUNXI_R_PIO_BASE
 	val = readl(SUNXI_R_PIO_BASE + SUN50I_H6_GPIO_POW_MOD_VAL);
 	writel(val, SUNXI_R_PIO_BASE + SUN50I_H6_GPIO_POW_MOD_SEL);
+#endif
 #endif
 
 	return 0;
@@ -290,6 +296,7 @@ uint32_t sunxi_get_boot_device(void)
 	case SUNXI_BOOTED_FROM_MMC2_HIGH:
 		return BOOT_DEVICE_MMC2;
 	case SUNXI_BOOTED_FROM_SPI:
+	case SUNXI_BOOTED_FROM_SPI_NAND:
 		return BOOT_DEVICE_SPI;
 	}
 
@@ -470,14 +477,15 @@ void reset_cpu(void)
 		/* sun5i sometimes gets stuck without this */
 		writel(WDT_MODE_RESET_EN | WDT_MODE_EN, &wdog->mode);
 	}
-#elif defined(CONFIG_SUNXI_GEN_SUN6I) || defined(CONFIG_SUN50I_GEN_H6)
+#elif defined(CONFIG_SUNXI_GEN_SUN6I) || defined(CONFIG_SUN50I_GEN_H6) || \
+	defined(CONFIG_MACH_SUN8I_T113)
 #if defined(CONFIG_MACH_SUN50I_H6)
 	/* WDOG is broken for some H6 rev. use the R_WDOG instead */
 	static const struct sunxi_wdog *wdog =
 		(struct sunxi_wdog *)SUNXI_R_WDOG_BASE;
 #else
 	static const struct sunxi_wdog *wdog =
-		((struct sunxi_timer_reg *)SUNXI_TIMER_BASE)->wdog;
+		&((struct sunxi_timer_reg *)SUNXI_TIMER_BASE)->wdog;
 #endif
 	/* Set the watchdog for its shortest interval (.5s) and wait */
 	writel(WDT_CFG_RESET, &wdog->cfg);

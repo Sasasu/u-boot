@@ -56,29 +56,49 @@ struct sunxi_gpio {
 	u32 cfg[4];
 	u32 dat;
 	u32 drv[2];
+#ifdef CONFIG_MACH_SUN8I_T113
+	u32 res1[2];
+#endif
 	u32 pull[2];
+#ifdef CONFIG_MACH_SUN8I_T113
+	u32 res2;
+#endif
 };
 
 /* gpio interrupt control */
 struct sunxi_gpio_int {
 	u32 cfg[3];
+#ifdef CONFIG_MACH_SUN8I_T113
+	u32 res1;
+#endif
 	u32 ctl;
 	u32 sta;
 	u32 deb;		/* interrupt debounce */
+#ifdef CONFIG_MACH_SUN8I_T113
+	u32 res2;
+#endif
 };
 
 struct sunxi_gpio_reg {
 	struct sunxi_gpio gpio_bank[SUNXI_GPIO_BANKS];
+#ifdef CONFIG_MACH_SUN8I_T113
+	u8 res[0x70];
+#else
 	u8 res[0xbc];
+#endif
 	struct sunxi_gpio_int gpio_int;
 };
 
 #define SUN50I_H6_GPIO_POW_MOD_SEL	0x340
 #define SUN50I_H6_GPIO_POW_MOD_VAL	0x348
 
+#ifdef SUNXI_R_PIO_BASE
 #define BANK_TO_GPIO(bank)	(((bank) < SUNXI_GPIO_L) ? \
 	&((struct sunxi_gpio_reg *)SUNXI_PIO_BASE)->gpio_bank[bank] : \
 	&((struct sunxi_gpio_reg *)SUNXI_R_PIO_BASE)->gpio_bank[(bank) - SUNXI_GPIO_L])
+#else
+#define BANK_TO_GPIO(bank)	&((struct sunxi_gpio_reg *)SUNXI_PIO_BASE)->gpio_bank[bank]
+#endif
 
 #define GPIO_BANK(pin)		((pin) >> 5)
 #define GPIO_NUM(pin)		((pin) & 0x1f)
@@ -134,6 +154,7 @@ enum sunxi_gpio_number {
 #define SUNXI_GPIO_INPUT	0
 #define SUNXI_GPIO_OUTPUT	1
 #define SUNXI_GPIO_DISABLE	7
+#define SUN8I_T113_GPIO_DISABLE	15
 
 #define SUN8I_H3_GPA_UART0	2
 #define SUN8I_H3_GPA_UART2	2
@@ -157,11 +178,13 @@ enum sunxi_gpio_number {
 #define SUN6I_GPC_SDC3		4
 #define SUN50I_GPC_SPI0		4
 #define SUNIV_GPC_SPI0		2
+#define SUN8I_T113_GPC_SPI0	2
 
 #define SUNXI_GPD_LCD0		2
 #define SUNXI_GPD_LVDS0		3
 
 #define SUNIV_GPE_UART0		5
+#define SUN8I_T113_GPE_UART0	6
 
 #define SUNXI_GPF_SDC0		2
 #define SUNXI_GPF_UART0		4

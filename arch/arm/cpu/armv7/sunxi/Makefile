@@ -10,7 +10,9 @@ obj-$(CONFIG_MACH_SUN6I)	+= tzpc.o
 obj-$(CONFIG_MACH_SUN8I_H3)	+= tzpc.o
 
 obj-$(CONFIG_MACH_SUN6I)	+= sram.o
+ifndef CONFIG_MACH_SUN8I_T113
 obj-$(CONFIG_MACH_SUN8I)	+= sram.o
+endif
 
 ifndef CONFIG_SPL_BUILD
 obj-$(CONFIG_ARMV7_PSCI)	+= psci.o

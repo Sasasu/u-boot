@@ -102,7 +102,7 @@ config AXP_PMIC_BUS
 config SUNXI_SRAM_ADDRESS
 	hex
 	default 0x10000 if MACH_SUN9I || MACH_SUN50I || MACH_SUN50I_H5
-	default 0x20000 if SUN50I_GEN_H6
+	default 0x20000 if SUN50I_GEN_H6 || MACH_SUN8I_T113
 	default 0x0
 	---help---
 	Older Allwinner SoCs have their mask boot ROM mapped just below 4GB,
@@ -312,6 +312,18 @@ config MACH_SUN8I_V3S
 	select SUPPORT_SPL
 	select ARMV7_BOOT_SEC_DEFAULT if OLD_SUNXI_KERNEL_COMPAT
 
+config MACH_SUN8I_T113
+	bool "sun8i (Allwinner T113)"
+	select CPU_V7A
+	select CPU_V7_HAS_NONSEC
+	select CPU_V7_HAS_VIRT
+	select ARCH_SUPPORT_PSCI
+	select MMC_SUNXI_HAS_NEW_MODE
+	select SUPPORT_SPL
+	select SPL_ARMV7_SET_CORTEX_SMPEN
+	select PHY_SUN4I_USB
+	select ARMV7_BOOT_SEC_DEFAULT
+
 config MACH_SUN9I
 	bool "sun9i (Allwinner A80)"
 	select CPU_V7A
@@ -460,7 +472,7 @@ config DRAM_TYPE
 
 config DRAM_CLK
 	int "sunxi dram clock speed"
-	default 792 if MACH_SUN9I
+	default 792 if MACH_SUN9I || MACH_SUN8I_T113
 	default 648 if MACH_SUN8I_R40
 	default 312 if MACH_SUN6I || MACH_SUN8I
 	default 360 if MACH_SUN4I || MACH_SUN5I || MACH_SUN7I || \
@@ -492,6 +504,7 @@ config DRAM_ZQ
 	default 3881979 if MACH_SUNXI_H3_H5 || MACH_SUN8I_R40 || MACH_SUN50I_H6
 	default 4145117 if MACH_SUN9I
 	default 3881915 if MACH_SUN50I
+	default 8092667 if MACH_SUN8I_T113
 	---help---
 	Set the dram zq value.
 
@@ -592,7 +605,7 @@ config SYS_CLK_FREQ
 	default 1008000000 if MACH_SUN6I
 	default 912000000 if MACH_SUN7I
 	default 816000000 if MACH_SUN50I || MACH_SUN50I_H5
-	default 1008000000 if MACH_SUN8I
+	default 1008000000 if MACH_SUN8I || MACH_SUN8I_T113
 	default 1008000000 if MACH_SUN9I
 	default 888000000 if MACH_SUN50I_H6
 	default 1008000000 if MACH_SUN50I_H616
@@ -603,7 +616,7 @@ config SYS_CONFIG_NAME
 	default "sun5i" if MACH_SUN5I
 	default "sun6i" if MACH_SUN6I
 	default "sun7i" if MACH_SUN7I
-	default "sun8i" if MACH_SUN8I
+	default "sun8i" if MACH_SUN8I || MACH_SUN8I_T113
 	default "sun9i" if MACH_SUN9I
 	default "sun50i" if MACH_SUN50I
 	default "sun50i" if MACH_SUN50I_H6
@@ -771,6 +784,7 @@ config VIDEO_SUNXI
 	depends on !MACH_SUNXI_H3_H5
 	depends on !MACH_SUN8I_R40
 	depends on !MACH_SUN8I_V3S
+	depends on !MACH_SUN8I_T113
 	depends on !MACH_SUN9I
 	depends on !MACH_SUN50I
 	depends on !SUN50I_GEN_H6
@@ -992,17 +1006,46 @@ config SPL_STACK_R_ADDR
 	default 0x4fe00000 if MACH_SUN6I
 	default 0x4fe00000 if MACH_SUN7I
 	default 0x4fe00000 if MACH_SUN8I
+	default 0x47e00000 if MACH_SUN8I_T113
 	default 0x2fe00000 if MACH_SUN9I
 	default 0x4fe00000 if MACH_SUN50I
 	default 0x4fe00000 if SUN50I_GEN_H6
 
 config SPL_SPI_SUNXI
-	bool "Support for SPI Flash on Allwinner SoCs in SPL"
-	depends on MACH_SUN4I || MACH_SUN5I || MACH_SUN7I || MACH_SUNXI_H3_H5 || MACH_SUN50I || MACH_SUN8I_R40 || MACH_SUN50I_H6 || MACH_SUNIV
-	help
+	bool "Support for SPI Nor/Nand Flash on Allwinner SoCs in SPL"
+	depends on MACH_SUN4I || MACH_SUN5I || MACH_SUN7I || MACH_SUNXI_H3_H5 || MACH_SUN50I || MACH_SUN8I_R40 || MACH_SUN50I_H6 || MACH_SUNIV || MACH_SUN8I_V3S || MACH_SUN8I_T113
+	---help---
 	  Enable support for SPI Flash. This option allows SPL to read from
 	  sunxi SPI Flash. It uses the same method as the boot ROM, so does
 	  not need any extra configuration.
+
+if SPL_SPI_SUNXI
+config SPL_SPI_SUNXI_DIV
+	hex "SPI Clockdivider of Allwinner SoCs in SPL"
+	default 0x1000 if MACH_SUN8I_V3S
+	default 0x100f if MACH_SUNIV
+	default 0x1001
+	---help---
+	  Select which clock divider should be used for spi clock
+
+config SPL_SPI_SUNXI_NOR
+	bool "Support for SPI-NOR Flash on Allwinner SoCs in SPL"
+	depends on MACH_SUN4I || MACH_SUN5I || MACH_SUN7I || MACH_SUNXI_H3_H5 || MACH_SUN50I || MACH_SUN8I_R40 || MACH_SUN50I_H6 || MACH_SUN8I_V3S || MACH_SUN8I_T113
+	default y
+	---help---
+	  Enable support for SPI-NOR Flash. This option allows SPL to read from
+	  sunxi SPI-NOR Flash. It uses the same method as the boot ROM, so does
+	  not need any extra configuration.
+
+config SPL_SPI_SUNXI_NAND
+	bool "Support for SPI-NAND Flash on Allwinner SoCs in SPL"
+	depends on MACH_SUN8I_V3S || MACH_SUN8I_T113
+	default n
+	---help---
+	  Enable support for SPI-NAND Flash. This option allows SPL to read from
+	  sunxi SPI-NAND Flash. It uses the same method as the boot ROM, so does
+	  not need any extra configuration.
+endif
 
 config PINE64_DT_SELECTION
 	bool "Enable Pine64 device tree selection code"
