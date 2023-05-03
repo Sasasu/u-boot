@@ -232,8 +232,9 @@ err_ahb:
 static void sun4i_spi_set_speed_mode(struct udevice *dev)
 {
 	struct sun4i_spi_priv *priv = dev_get_priv(dev);
-	unsigned int div;
 	u32 reg;
+#ifndef CONFIG_MACH_SUN8I_T113
+	unsigned int div;
 
 	/*
 	 * Setup clock divider.
@@ -270,6 +271,7 @@ static void sun4i_spi_set_speed_mode(struct udevice *dev)
 	}
 
 	writel(reg, SPI_REG(priv, SPI_CCR));
+#endif
 
 	reg = readl(SPI_REG(priv, SPI_TCR));
 	reg &= ~(SPI_BIT(priv, SPI_TCR_CPOL) | SPI_BIT(priv, SPI_TCR_CPHA));

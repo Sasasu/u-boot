@@ -38,6 +38,14 @@
 #define SUN8I_R40_PWR_CLAMP(cpu)		(0x120 + (cpu) * 0x4)
 #define SUN8I_R40_SRAMC_SOFT_ENTRY_REG0		(0xbc)
 
+/*
+ * T113 is different from other single cluster SoCs.
+ */
+#define SUN8I_T113_CPUCFG_C0_RST_CTRL		(0x09010000)
+#define SUN8I_T113_CPUCFG_C0_CPU_STATUS		(0x09010080)
+#define SUN8I_T113_CPU0_ENTRY_ADDR_REG		(0x070005c4)
+#define SUN8I_T113_CPU1_ENTRY_ADDR_REG		(0x070005c8)
+
 static void __secure cp15_write_cntp_tval(u32 tval)
 {
 	asm volatile ("mcr p15, 0, %0, c14, c2, 0" : : "r" (tval));
@@ -76,6 +84,7 @@ static void __secure __mdelay(u32 ms)
 	isb();
 }
 
+#ifndef CONFIG_MACH_SUN8I_T113
 static void __secure clamp_release(u32 __maybe_unused *clamp)
 {
 #if defined(CONFIG_MACH_SUN6I) || defined(CONFIG_MACH_SUN7I) || \
@@ -191,6 +200,22 @@ void __secure sunxi_cpu_power_off(u32 cpuid)
 	/* Unlock CPU (Disable external debug access) */
 	setbits_le32(&cpucfg->dbg_ctrl1, BIT(cpu));
 }
+#else
+void __secure sunxi_cpu_power_off(u32 cpuid)
+{
+	u32 cpu = cpuid & 0x1;
+
+	/* Wait for the core to enter WFI */
+	while (1) {
+		if ((readl(SUN8I_T113_CPUCFG_C0_CPU_STATUS) >> 16) & BIT(cpu))
+			break;
+		__mdelay(1);
+	}
+
+	/* Assert reset on target CPU */
+	clrbits_le32(SUN8I_T113_CPUCFG_C0_RST_CTRL, BIT(cpu));
+}
+#endif
 
 static u32 __secure cp15_read_scr(void)
 {
@@ -243,6 +268,7 @@ out:
 	cp15_write_scr(scr);
 }
 
+#ifndef CONFIG_MACH_SUN8I_T113
 int __secure psci_cpu_on(u32 __always_unused unused, u32 mpidr, u32 pc,
 			 u32 context_id)
 {
@@ -276,6 +302,24 @@ int __secure psci_cpu_on(u32 __always_unused unused, u32 mpidr, u32 pc,
 
 	return ARM_PSCI_RET_SUCCESS;
 }
+#else
+int __secure psci_cpu_on(u32 __always_unused unused, u32 mpidr, u32 pc,
+			 u32 context_id)
+{
+	u32 cpu = (mpidr & 0x1);
+
+	/* store target PC and context id */
+	psci_save(cpu, pc, context_id);
+
+	/* Set secondary core power on PC */
+	writel((u32)&psci_cpu_entry, SUN8I_T113_CPU1_ENTRY_ADDR_REG);
+
+	/* De-assert reset on target CPU */
+	setbits_le32(SUN8I_T113_CPUCFG_C0_RST_CTRL, BIT(cpu));
+
+	return ARM_PSCI_RET_SUCCESS;
+}
+#endif
 
 s32 __secure psci_cpu_off(void)
 {

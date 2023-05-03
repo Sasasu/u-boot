@@ -228,6 +228,7 @@ struct sunxi_ccm_reg {
 
 /* pll1 bit field */
 #define CCM_PLL1_CTRL_EN		BIT(31)
+#define CCM_PLL1_LDO_EN			BIT(30)
 #define CCM_PLL1_LOCK_EN		BIT(29)
 #define CCM_PLL1_LOCK			BIT(28)
 #define CCM_PLL1_OUT_EN			BIT(27)
@@ -248,6 +249,8 @@ struct sunxi_ccm_reg {
 #define CCM_PLL6_CTRL_EN		BIT(31)
 #define CCM_PLL6_LOCK_EN		BIT(29)
 #define CCM_PLL6_LOCK			BIT(28)
+#define CCM_PLL6_CTRL_P0_SHIFT		16
+#define CCM_PLL6_CTRL_P0_MASK		(0x7 << CCM_PLL6_CTRL_P0_SHIFT)
 #define CCM_PLL6_CTRL_N_SHIFT		8
 #define CCM_PLL6_CTRL_N_MASK		(0xff << CCM_PLL6_CTRL_N_SHIFT)
 #define CCM_PLL6_CTRL_DIV1_SHIFT	0
@@ -274,6 +277,16 @@ struct sunxi_ccm_reg {
 
 /* apb1 bit field */
 #define CCM_APB1_DEFAULT		0x03000102
+
+#elif CONFIG_MACH_SUN8I_T113
+#define CCM_PLL6_DEFAULT		0xe8216300
+
+/* psi_ahb1_ahb2 bit field */
+#define CCM_PSI_AHB1_AHB2_DEFAULT	0x03000002
+
+/* apb1 bit field */
+#define CCM_APB1_DEFAULT		0x03000102
+
 #elif CONFIG_MACH_SUN50I_H616
 #define CCM_PLL6_DEFAULT		0xa8003100
 

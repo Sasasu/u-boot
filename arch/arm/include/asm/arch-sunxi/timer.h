@@ -65,6 +65,11 @@ struct sunxi_timer_reg {
 	u8 res1[8];
 	struct sunxi_timer timer[6];	/* We have 6 timers */
 	u8 res2[16];
+#ifdef CONFIG_MACH_SUN8I_T113
+	u8 res3[32];
+	struct sunxi_wdog wdog;	/* 0xa0 */
+	struct sunxi_avs avs;
+#else
 	struct sunxi_avs avs;
 #if defined(CONFIG_SUNXI_GEN_SUN4I) || defined(CONFIG_MACH_SUN8I_R40)
 	struct sunxi_wdog wdog;	/* 0x90 */
@@ -79,6 +84,7 @@ struct sunxi_timer_reg {
 #elif defined(CONFIG_SUNXI_GEN_SUN6I) || defined(CONFIG_SUN50I_GEN_H6)
 	u8 res3[16];
 	struct sunxi_wdog wdog[5];	/* We have 5 watchdogs */
+#endif
 #endif
 };
 

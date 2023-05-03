@@ -28,7 +28,10 @@
 # define CFG_SYS_NS16550_COM2		SUNXI_UART1_BASE
 # define CFG_SYS_NS16550_COM3		SUNXI_UART2_BASE
 # define CFG_SYS_NS16550_COM4		SUNXI_UART3_BASE
+#ifdef SUNXI_R_UART_BASE
 # define CFG_SYS_NS16550_COM5		SUNXI_R_UART_BASE
+#else
+# define CONFIG_SYS_NS16550_COM5		SUNXI_UART4_BASE
 #endif
 
 /* CPU */
@@ -146,7 +149,21 @@
 #define FDTOVERLAY_ADDR_R __stringify(SDRAM_OFFSET(1B00000))
 #define RAMDISK_ADDR_R    __stringify(SDRAM_OFFSET(1C00000))
 
-#elif (CONFIG_SUNXI_MINIMUM_DRAM_MB >= 32)
+#elif defined(CONFIG_MACH_SUN8I_T113)
+/*
+ * 128M RAM minus 2MB heap + 16MB for u-boot, stack, fb, etc.
+ * 16M uncompressed kernel, 8M compressed kernel, 1M fdt,
+ * 1M script, 1M pxe, 1M dt overlay and the ramdisk at the end.
+ */
+#define BOOTM_SIZE        __stringify(0x6e00000)
+#define KERNEL_ADDR_R     __stringify(SDRAM_OFFSET(5000000))
+#define FDT_ADDR_R        __stringify(SDRAM_OFFSET(5800000))
+#define SCRIPT_ADDR_R     __stringify(SDRAM_OFFSET(5900000))
+#define PXEFILE_ADDR_R    __stringify(SDRAM_OFFSET(5A00000))
+#define FDTOVERLAY_ADDR_R __stringify(SDRAM_OFFSET(5B00000))
+#define RAMDISK_ADDR_R    __stringify(SDRAM_OFFSET(5C00000))
+
+#elif defined(CONFIG_MACH_SUNIV)
 /*
  * 32M RAM minus 2.5MB for u-boot, heap, stack, etc.
  * 16M uncompressed kernel, 7M compressed kernel, 128K fdt, 64K script,

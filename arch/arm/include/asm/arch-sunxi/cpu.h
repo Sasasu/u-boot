@@ -10,6 +10,8 @@
 #include <asm/arch/cpu_sun9i.h>
 #elif defined(CONFIG_SUN50I_GEN_H6)
 #include <asm/arch/cpu_sun50i_h6.h>
+#elif defined(CONFIG_MACH_SUN8I_T113)
+#include <asm/arch/cpu_sun8i_t113.h>
 #else
 #include <asm/arch/cpu_sun4i.h>
 #endif
