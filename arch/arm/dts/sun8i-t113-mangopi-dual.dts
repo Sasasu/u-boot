@@ -12,7 +12,7 @@
 	compatible = "allwinner,sun8i-t113", "allwinner,sun8i";
 
 	aliases {
-		serial0 = &uart0;
+		serial0 = &uart3;
 	};
 
 	chosen {
@@ -76,8 +76,8 @@
 	vcc-pg-supply = <&reg_vcc_3v3>;
 };
 
-&uart0 {
-	pinctrl-0 = <&uart0_pe_pins>;
+&uart3 {
+	pinctrl-0 = <&uart3_pb_pins>;
 	pinctrl-names = "default";
 	status = "okay";
 };
@@ -100,6 +100,16 @@
 	vmmc-supply = <&reg_vcc_3v3>;
 	vqmmc-supply = <&reg_vcc_3v3>;
 	pinctrl-0 = <&mmc0_pins>;
+	pinctrl-names = "default";
+	status = "okay";
+};
+
+&mmc2 {
+	bus-width = <4>;
+	disable-wp;
+	vmmc-supply = <&reg_vcc_3v3>;
+	vqmmc-supply = <&reg_vcc_3v3>;
+	pinctrl-0 = <&mmc2_pins>;
 	pinctrl-names = "default";
 	status = "okay";
 };
