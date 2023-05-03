@@ -33,6 +33,7 @@
 #else
 # define CONFIG_SYS_NS16550_COM5		SUNXI_UART4_BASE
 #endif
+#endif
 
 /* CPU */
 

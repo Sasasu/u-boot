@@ -12,7 +12,7 @@
  * from SPI Flash, everything else is using pins PC0,PC1,PC2,PC3.
  * The H6 uses PC0, PC2, PC3, PC5, the H616 PC0, PC2, PC3, PC4.
  */
-void spi0_pinmux_setup(unsigned int pin_function)
+void sunxi_spi0_pinmux_setup(unsigned int pin_function)
 {
 	/* All chips use PC2. */
 	sunxi_gpio_set_cfgpin(SUNXI_GPC(2), pin_function);
@@ -108,7 +108,7 @@ void sunxi_spi0_enable_clock(void)
 	}
 }
 
-static void sunxi_spi0_disable_clock(void)
+void sunxi_spi0_disable_clock(void)
 {
 	uintptr_t base = sunxi_spi0_base_address();
 
@@ -138,7 +138,7 @@ static void sunxi_spi0_disable_clock(void)
 			     (1 << AHB_RESET_SPI0_SHIFT));
 }
 
-static void sunxi_spi0_init(void)
+void sunxi_spi0_init(void)
 {
 	unsigned int pin_function = SUNXI_GPC_SPI0;
 

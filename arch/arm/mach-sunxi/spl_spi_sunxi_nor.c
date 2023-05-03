@@ -97,7 +97,7 @@ static int spl_spi_nor_load_image(struct spl_image_info *spl_image,
 				  struct spl_boot_device *bootdev)
 {
 	int ret = 0;
-	struct image_header *header = (struct image_header *)(CONFIG_SYS_TEXT_BASE);
+	struct image_header *header = (struct image_header *)(CONFIG_SPL_TEXT_BASE);
 	uint32_t load_offset = sunxi_get_spl_size();
 
 	load_offset = max_t(uint32_t, load_offset, CONFIG_SYS_SPI_U_BOOT_OFFS);
