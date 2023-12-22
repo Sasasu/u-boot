@@ -94,7 +94,7 @@
 	phy-supply = <&reg_3v3>; // vcc-pe-supply
 	allwinner,rx-delay-ps = <200>;
 	allwinner,tx-delay-ps = <200>;
-	status = "okay";
+	status = "disabled";
 };
 
 &mdio {
